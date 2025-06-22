@@ -1,10 +1,12 @@
 package com.jksalcedo.permissionmanager
 
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var permissionManager: PermissionManager
     private lateinit var statusTextView: TextView
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,12 +39,14 @@ class MainActivity : AppCompatActivity() {
         updateStatus("Initial state: Tap button to request permissions")
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestPermissions() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val result = permissionManager.request(
                     android.Manifest.permission.CAMERA,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 )
                 when (result) {
                     is PermissionManager.PermissionResult.Granted -> {
@@ -60,6 +65,8 @@ class MainActivity : AppCompatActivity() {
                     is PermissionManager.PermissionResult.PermanentlyDenied -> {
                         updateStatus("Permanently denied: ${result.permanentlyDeniedPermissions}. Please enable in settings.")
                     }
+
+                    is PermissionManager.PermissionResult.BackgroundPermissionRequiredSettings -> permissionManager.openAppSettings()
                 }
             } catch (e: Exception) {
                 Log.e("PermissionTest", "Error requesting permissions", e)
