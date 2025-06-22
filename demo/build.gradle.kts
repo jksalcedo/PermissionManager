@@ -46,4 +46,5 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(project(":permissionmanager"))
+    implementation(libs.permissionmanager)
 }

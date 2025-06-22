@@ -1,10 +1,16 @@
 package com.jksalcedo.permissionmanager
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CancellableContinuation
@@ -52,6 +58,14 @@ class PermissionManager private constructor(
          * @property permanentlyDeniedPermissions A list of permissions that were permanently denied.
          */
         data class PermanentlyDenied(val permanentlyDeniedPermissions: List<String>) : PermissionResult()
+
+        /**
+         * Indicates that a background permission is required and the user needs to be
+         * redirected to the app's settings page to grant it. This is typically used for
+         * permissions like `ACCESS_BACKGROUND_LOCATION`.
+         * @property permission The specific background permission that needs to be granted via settings.
+         */
+        data class BackgroundPermissionRequiredSettings(val permission: String) : PermissionResult()
     }
 
     /**
@@ -79,6 +93,7 @@ class PermissionManager private constructor(
          * @param activity The ComponentActivity from which permissions will be requested.
          * @return A configured instance of PermissionManager.
          */
+        @RequiresApi(Build.VERSION_CODES.Q)
         fun from(activity: ComponentActivity): PermissionManager {
             val manager = PermissionManager(activity, null)
             manager.launcher = activity.registerForActivityResult(
@@ -95,6 +110,7 @@ class PermissionManager private constructor(
          * @param fragment The Fragment from which permissions will be requested.
          * @return A configured instance of PermissionManager.
          */
+        @RequiresApi(Build.VERSION_CODES.Q)
         fun from(fragment: Fragment): PermissionManager {
             val manager = PermissionManager(fragment.requireActivity(), null)
             manager.launcher = fragment.registerForActivityResult(
@@ -124,6 +140,7 @@ class PermissionManager private constructor(
      * Handles the result received from the ActivityResultLauncher and resumes the
      * corresponding coroutine.
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun handlePermissionResult(result: Map<String, Boolean>) {
         val continuation = activeContinuation
         activeContinuation = null // Clear the active continuation.
@@ -131,7 +148,15 @@ class PermissionManager private constructor(
         val denied = result.filterValues { !it }.keys.toList()
 
         val permissionResult = if (denied.isEmpty()) {
-            PermissionResult.Granted
+            // Check for specific background permissions here if all initially granted
+            val backgroundLocationRequested = result.keys.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            if (backgroundLocationRequested && !isBackgroundLocationGranted()) {
+                // Even if the initial dialog was "granted", if it's background location,
+                // we might still need to guide them to settings.
+                PermissionResult.BackgroundPermissionRequiredSettings(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                PermissionResult.Granted
+            }
         } else {
             val permanentlyDenied = denied.filter {
                 !activity.shouldShowRequestPermissionRationale(it)
@@ -139,7 +164,15 @@ class PermissionManager private constructor(
             if (permanentlyDenied.isNotEmpty()) {
                 PermissionResult.PermanentlyDenied(permanentlyDenied)
             } else {
-                PermissionResult.Denied(denied)
+                // Handle specific cases for denied permissions
+                if (denied.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                    // On Android 10+, denying background location might mean they just gave foreground.
+                    // You could potentially differentiate here, but usually, it's safer to assume
+                    // a denial means they need to be prompted to settings for background.
+                    PermissionResult.BackgroundPermissionRequiredSettings(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                } else {
+                    PermissionResult.Denied(denied)
+                }
             }
         }
         continuation?.resume(permissionResult)
@@ -197,6 +230,27 @@ class PermissionManager private constructor(
      */
     fun shouldShowRationale(permission: String): Boolean {
         return activity.shouldShowRequestPermissionRationale(permission)
+    }
+
+    // Helper function to check if background location is truly granted
+    private fun isBackgroundLocationGranted(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true // Background location is implicitly granted with ACCESS_FINE_LOCATION on older Android versions
+        }
+    }
+
+    fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", activity.packageName, null)
+            addCategory(Intent.CATEGORY_DEFAULT)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        activity.startActivity(intent)
     }
 }
 
