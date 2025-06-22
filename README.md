@@ -1,5 +1,7 @@
 # PermissionManager for Android
 
+[![](https://jitpack.io/v/jksalcedo/PermissionManager.svg)](https://jitpack.io/#jksalcedo/PermissionManager)
+
 A modern, lightweight, and robust Android library for handling runtime permissions with the power of Kotlin Coroutines. It abstracts away the boilerplate of ActivityResultContracts and provides a clean, sequential, and easy-to-read way to request permissions in your app.
 Why use PermissionManager?
 
