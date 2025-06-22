@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("maven-publish")
 }
 
 android {
@@ -30,6 +31,13 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    publishing {
+        singleVariant("release") {
+            // withSourcesJar()
+            // withJavadocJar()
+        }
+    }
 }
 
 dependencies {
@@ -43,4 +51,22 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm
     runtimeOnly(libs.kotlinx.coroutines.core.jvm)
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.jksalcedo.permissionmanager"
+            artifactId = "permissionmanager"
+            version = "1.0.0"
+            // Publish the release variant
+            afterEvaluate {
+                from(components.findByName("release") ?: components["android"])
+            }
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }
