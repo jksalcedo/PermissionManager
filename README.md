@@ -31,6 +31,18 @@ Why use PermissionManager?
 ✅ Written entirely in Kotlin.
 
 
+---
+
+## Limitations
+
+While PermissionManager aims to simplify runtime permission handling, it's important to be aware of the following considerations:
+
+* **Single Active Request:** The library processes permission requests sequentially using an internal queue. This means **only one permission request dialog can be active at a time**. If multiple `request()` calls are made in quick succession, they'll be queued and presented to the user one after another.
+* **Android's Permission Dialog UI:** The appearance and behavior of the permission dialogs are controlled by the Android system. PermissionManager **doesn't offer customization of these dialogs**.
+* **Manual Step for Full Background Permissions:** For permissions like `android.permission.ACCESS_BACKGROUND_LOCATION` or `android.permission.ACTIVITY_RECOGNITION` (on Android 10+), getting full background access often requires an **additional user interaction to navigate to the app's system settings** after the initial permission dialog. While your `PermissionManager` can return a `PermissionResult.BackgroundPermissionRequiredSettings` to indicate this, and provides the `openAppSettings()` utility, the library's `request()` method **doesn't automatically initiate this navigation**. Developers must explicitly call `openAppSettings()` based on the `PermissionResult` to complete the process.
+* **Context Dependency:** The `PermissionManager` instance is tied to the lifecycle of an `Activity` or `Fragment`. If your app's architecture involves requesting permissions from contexts outside of an `Activity` or `Fragment` (e.g., from a `Service` or `Application` class directly), you'll need to find alternative methods for permission requests in those scenarios, as this library is **not designed for such use cases**.
+
+
 ## Installation
 
 Add the following dependencies to your module's build.gradle.kts (or build.gradle) file.
