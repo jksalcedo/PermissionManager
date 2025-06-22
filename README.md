@@ -52,7 +52,7 @@ dependencyResolutionManagement {
 ```
 // build.gradle.kts
 dependencies {
-    implementation("com.github.jksalcedo.PermissionManager:permission-manager:1.0.0")
+    implementation("com.github.jksalcedo:PermissionManager:1.0.0")
 
     // PermissionManager also requires the following dependencies
     implementation("androidx.activity:activity-ktx:1.9.0")
