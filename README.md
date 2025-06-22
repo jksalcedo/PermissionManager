@@ -50,7 +50,7 @@ Add the following dependencies to your module's build.gradle.kts (or build.gradl
 **Step 1: Add JitPack repository**
 
 Add JitPack to your project's settings.gradle file:
-```
+```kotlin
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -61,7 +61,7 @@ dependencyResolutionManagement {
 }
 ```
 **Step 2: Add the library dependency**
-```
+```kotlin
 // build.gradle.kts
 dependencies {
     implementation("com.github.jksalcedo:PermissionManager:1.0.0")
@@ -79,7 +79,7 @@ dependencies {
 Initialize the PermissionManager in your Activity or Fragment. It's best to do this as a property delegate or a lazy-initialized property.
 
 **In an Activity:**
-```
+```kotlin
 class MainActivity : AppCompatActivity() {
 
     private val permissionManager: PermissionManager by lazy {
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 **In a Fragment:**
-```
+```kotlin
 class MyFragment : Fragment() {
 
     private val permissionManager: PermissionManager by lazy {
@@ -107,7 +107,7 @@ Launch a coroutine from a LifecycleScope and call the request() method.
 **Requesting a Single Permission:**
 
 Here’s how you would request the camera permission when a button is clicked.
-```
+```kotlin
 // Inside your Activity or Fragment
 fun onCameraButtonClick() {
     lifecycleScope.launch {
@@ -135,7 +135,7 @@ fun onCameraButtonClick() {
 **Requesting Multiple Permissions:**
 
 You can request multiple permissions in a single call.
-```
+```kotlin
 fun requestStorageAndLocation() {
     lifecycleScope.launch {
         val result = permissionManager.request(
@@ -164,7 +164,7 @@ fun requestStorageAndLocation() {
 ### 3. Checking Permissions and Showing a Rationale
 
 Before requesting a permission, you can check if it's already granted or if you should show a rationale to the user (if they've denied it previously).
-```
+```kotlin
 fun checkAndRequestCamera() {
     // Check if permission is already granted
     if (permissionManager.arePermissionsGranted(Manifest.permission.CAMERA)) {
