@@ -73,6 +73,22 @@ dependencies {
 }
 ```
 
+## API
+| Function / Class                       | Description                                              | Parameters                  | Returns                 |
+|----------------------------------------|----------------------------------------------------------|-----------------------------|-------------------------|
+| `PermissionManager.from(activity)`     | Instantiates a `PermissionManager` tied to a `ComponentActivity`. | `activity: ComponentActivity` | `PermissionManager`     |
+| `PermissionManager.from(fragment)`     | Instantiates a `PermissionManager` tied to a `Fragment`. | `fragment: Fragment`         | `PermissionManager`     |
+| `suspend PermissionManager.request(vararg permissions)` | Suspends and requests the specified permissions. Returns when the user responds. | `permissions: String...`     | `PermissionResult`      |
+| `PermissionManager.arePermissionsGranted(vararg permissions)` | Checks if all permissions are already granted. | `permissions: String...`     | `Boolean`               |
+| `PermissionManager.shouldShowRationale(permission)` | Checks if rationale should be shown for a permission. | `permission: String`         | `Boolean`               |
+| `PermissionManager.openAppSettings()`  | Opens the app’s settings screen (for manually granting permissions). | —                           | `Unit`                  |
+| `PermissionResult.Granted`             | Indicates all permissions granted.                      | —                           | —                       |
+| `PermissionResult.Denied(deniedPermissions)` | Indicates one or more permissions denied.           | `deniedPermissions: List<String>` | —                   |
+| `PermissionResult.PermanentlyDenied(permanentlyDeniedPermissions)` | Indicates one or more permissions permanently denied (user selected “Don’t ask again”). | `permanentlyDeniedPermissions: List<String>` | — |
+| `PermissionResult.BackgroundPermissionRequiredSettings(permission)` | User must manually enable a background permission in settings. | `permission: String`         | —                       |
+| `Context.isPermissionGranted(permission)` | Checks if a specific permission is granted.          | `permission: String`         | —                       |
+
+
 ## How to Use
 ### 1. Initialization
 
