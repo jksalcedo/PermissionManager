@@ -194,7 +194,13 @@ private suspend fun requestCameraPermission() {
     }
 }
 ```
-
 ## Contributing
 
-Contributions are always welcome! Please feel free to submit a pull request or open an issue.
+Contributions are welcome! To contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bugfix.
+3. Make your changes and add tests if needed.
+4. Open a pull request with a clear description of your changes.
+
+Please follow the existing code style and conventions.
